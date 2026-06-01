@@ -54,3 +54,58 @@ class MainActivity : AppCompatActivity() {
 
         webView.webChromeClient = object : WebChromeClient() {
             override fun onShowFileChooser(
+                webView: WebView?,
+                filePathCallback: ValueCallback<Array<Uri>>?,
+                fileChooserParams: WebChromeClient.FileChooserParams?
+            ): Boolean {
+                if (fileUploadCallback != null) {
+                    fileUploadCallback?.onReceiveValue(null)
+                    fileUploadCallback = null
+                }
+                fileUploadCallback = filePathCallback
+
+                val intent = fileChooserParams?.createIntent()
+                try {
+                    if (intent != null) {
+                        fileChooserLauncher.launch(intent)
+                    }
+                } catch (e: Exception) {
+                    fileUploadCallback = null
+                    return false
+                }
+                return true
+            }
+        }
+
+        webView.loadUrl("file:///android_asset/index.html")
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack()
+        } else {
+            super.onBackPressed()
+        }
+    }
+}
+
+        webView = findViewById(R.id.webView)
+
+        val webSettings: WebSettings = webView.settings
+        webSettings.javaScriptEnabled = true
+        webSettings.domStorageEnabled = true 
+        webSettings.allowFileAccess = true
+        webSettings.allowContentAccess = true
+        webSettings.mediaPlaybackRequiresUserGesture = false 
+
+        webView.webViewClient = object : WebViewClient() {
+            @Deprecated("Deprecated in Java")
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                view?.loadUrl(url ?: "")
+                return true
+            }
+        }
+
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onShowFileChooser(
